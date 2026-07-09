@@ -159,7 +159,7 @@
   function opposite(dim, pole) { return other(dim, pole); }
 
   /* ---------- 结果渲染 ---------- */
-  const elType = document.getElementById('result-type');
+  const elType = document.getElementById('result-title');
   const elName = document.getElementById('result-name');
   const elTagline = document.getElementById('result-tagline');
   const elDesc = document.getElementById('result-desc');
