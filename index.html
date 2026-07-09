@@ -11,6 +11,13 @@
   <meta property="og:title" content="MBTI 人格测试 · 28 题看清你是谁" />
   <meta property="og:description" content="28 道精选题目，3 分钟测出你的十六型人格，免费可分享。" />
   <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/img/cover.svg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="MBTI 人格测试 · 28 题看清你是谁" />
+  <meta name="twitter:description" content="28 道精选题目，3 分钟测出你的十六型人格，免费可分享。" />
+  <meta name="twitter:image" content="assets/img/cover.svg" />
   <!-- 纯系统字体：零外部依赖，国内网络秒开，不依赖任何 CDN -->
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
@@ -54,6 +61,11 @@
           <li><span class="dot"></span>一键复制，分享给朋友</li>
         </ul>
         <button id="start-btn" class="btn btn-primary magnetic" type="button">开始测试</button>
+        <div id="history-section" class="history-section" hidden>
+          <h3 class="col-title">你测过的结果</h3>
+          <ul class="history-list" id="history-list"></ul>
+          <button id="clear-history-btn" class="btn-link" type="button">清除记录</button>
+        </div>
         <p class="intro-note">本测试用于自我探索与趣味参考，不构成心理诊断。</p>
       </div>
     </section>
@@ -89,6 +101,7 @@
     <!-- 第三屏：结果 -->
     <section id="screen-result" class="screen" aria-labelledby="result-title" hidden>
       <div class="result-card glass">
+        <canvas id="result-canvas" class="result-canvas" aria-hidden="true"></canvas>
         <p class="result-eyebrow" id="result-eyebrow" aria-live="polite">你的类型是</p>
         <h2 id="result-title" class="result-type" aria-live="polite">—</h2>
         <p class="result-name" id="result-name"></p>
@@ -108,13 +121,33 @@
           </div>
         </div>
 
+        <div class="result-block">
+          <h3 class="col-title">逐维度解读</h3>
+          <ul class="dim-details" id="dim-details"></ul>
+        </div>
+
         <div class="result-field">
           <h3 class="col-title">可能适合的方向</h3>
           <ul class="tag-list tag-list-soft" id="fields"></ul>
         </div>
 
+        <div class="result-block">
+          <h3 class="col-title">代表性人物</h3>
+          <ul class="tag-list tag-list-soft" id="celebrities"></ul>
+        </div>
+
+        <div class="result-block">
+          <h3 class="col-title">恋爱小贴士</h3>
+          <p class="result-love" id="love"></p>
+        </div>
+
         <div class="result-actions">
           <button id="copy-btn" class="btn btn-primary magnetic" type="button">复制结果</button>
+          <button id="share-img-btn" class="btn btn-ghost" type="button">生成分享图</button>
+        </div>
+        <div class="result-actions">
+          <button id="pair-btn" class="btn btn-ghost" type="button">测 TA 的匹配度</button>
+          <button id="type-page-btn" class="btn btn-ghost" type="button">类型档案</button>
           <button id="retest-btn" class="btn btn-ghost" type="button">重新测试</button>
         </div>
         <p class="copy-hint" id="copy-hint" aria-live="polite"></p>
@@ -125,6 +158,34 @@
     <div id="analyzing" class="analyzing" hidden>
       <div class="spinner" aria-hidden="true"></div>
       <p>正在分析你的人格画像…</p>
+    </div>
+
+    <!-- 配对弹层 -->
+    <div id="pair-modal" class="modal" hidden>
+      <div class="modal-mask" data-close-pair></div>
+      <div class="modal-card glass" role="dialog" aria-modal="true" aria-labelledby="pair-title">
+        <button class="modal-close" type="button" data-close-pair aria-label="关闭">×</button>
+        <h3 id="pair-title" class="modal-title">测 TA 的匹配度</h3>
+        <p class="modal-sub">你是 <strong id="pair-me">—</strong>，选出 TA 的类型看看契合度：</p>
+        <div class="pair-grid" id="pair-grid"></div>
+        <div class="pair-result" id="pair-result" hidden>
+          <div class="pair-score"><span id="pair-score-num">0</span><small>%</small></div>
+          <p class="pair-verdict" id="pair-verdict"></p>
+          <p class="pair-detail" id="pair-detail"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分享图弹层 -->
+    <div id="share-modal" class="modal" hidden>
+      <div class="modal-mask" data-close-share></div>
+      <div class="modal-card glass share-card" role="dialog" aria-modal="true" aria-labelledby="share-title">
+        <button class="modal-close" type="button" data-close-share aria-label="关闭">×</button>
+        <h3 id="share-title" class="modal-title">保存分享图</h3>
+        <p class="modal-sub">长按图片即可保存到相册，发朋友圈秀出你的人格类型～</p>
+        <div class="share-img-wrap"><img id="share-img" class="share-img" alt="MBTI 结果分享图" /></div>
+        <a id="share-download" class="btn btn-primary" download="mbti-result.png">下载图片</a>
+      </div>
     </div>
   </main>
 
