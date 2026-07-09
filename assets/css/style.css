@@ -473,6 +473,24 @@ body {
 }
 .result-card > *:not(.result-canvas) { position: relative; z-index: 1; }
 
+/* ---------- 结果 3D 人格星形体 ---------- */
+.personality-3d-wrap {
+  position: relative;
+  width: min(280px, 78vw);
+  height: 240px;
+  margin: 6px auto 10px;
+  z-index: 1;
+}
+.personality-3d-wrap canvas { display: block; width: 100%; height: 100%; }
+.personality-3d-hint {
+  position: absolute; left: 0; right: 0; bottom: 4px;
+  text-align: center; font-size: 0.72rem; letter-spacing: 0.05em;
+  color: var(--text-faint); pointer-events: none;
+}
+@media (max-width: 480px) {
+  .personality-3d-wrap { height: 210px; width: min(240px, 72vw); }
+}
+
 /* ---------- 结果入场：字母浮现 ---------- */
 .result-type .char {
   display: inline-block;
