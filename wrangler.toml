@@ -1,4 +1,4 @@
 name = "mbti-test"
 compatibility_date = "2025-01-01"
 # 纯静态资源托管：把仓库根目录作为静态资源桶，所有路由回退到 index.html
-assets = { bucket = ".", not_found_handling = "single-page-application" }
+assets = { directory = ".", not_found_handling = "single-page-application" }
