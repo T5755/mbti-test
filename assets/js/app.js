@@ -16,12 +16,29 @@
   /* ---------- 主题 ---------- */
   const THEME_KEY = 'mbti-theme';
   const themeBtns = document.querySelectorAll('.theme-btn');
+  const metaThemeColor = document.getElementById('meta-theme-color');
+
+  // 解析出实际生效的主题（system 需结合系统偏好）
+  function effectiveTheme() {
+    const t = document.documentElement.getAttribute('data-theme');
+    if (t === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return t;
+  }
+
+  // 同步移动端浏览器状态栏配色
+  function syncThemeColor() {
+    if (!metaThemeColor) return;
+    metaThemeColor.setAttribute('content', effectiveTheme() === 'dark' ? '#0c0d14' : '#f4f5fb');
+  }
 
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     themeBtns.forEach((b) => {
       b.classList.toggle('is-active', b.dataset.setTheme === theme);
     });
+    syncThemeColor();
   }
   function initTheme() {
     const saved = localStorage.getItem(THEME_KEY) || 'system';
@@ -33,6 +50,10 @@
         applyTheme(t);
       });
     });
+    // 跟随系统模式下，系统配色变化也实时同步状态栏
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mq.addEventListener) mq.addEventListener('change', syncThemeColor);
+    else if (mq.addListener) mq.addListener(syncThemeColor);
   }
 
   /* ---------- 屏幕切换 ---------- */
