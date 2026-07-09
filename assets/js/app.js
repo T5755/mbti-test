@@ -133,7 +133,7 @@
       s.classList.toggle('is-active', active);
       s.hidden = !active;
     });
-    if (id !== 'screen-result') stopParticles();
+    if (id !== 'screen-result') { stopParticles(); if (window.disposePersonality3D) disposePersonality3D(); }
   }
 
   /* ---------- 磁性按钮 ---------- */
@@ -345,6 +345,7 @@
       showScreen('screen-result');
       elProgressFill.style.width = '100%';
       startParticles();
+      if (window.initPersonality3D) initPersonality3D(res);
     }, 850);
   }
 
