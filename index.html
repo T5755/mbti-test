@@ -104,6 +104,10 @@
         <canvas id="result-canvas" class="result-canvas" aria-hidden="true"></canvas>
         <p class="result-eyebrow" id="result-eyebrow" aria-live="polite">你的类型是</p>
         <h2 id="result-title" class="result-type" aria-live="polite">—</h2>
+        <div class="personality-3d-wrap" aria-hidden="true">
+          <canvas id="personality-3d"></canvas>
+          <p class="personality-3d-hint">四维人格星象 · 拖拽旋转</p>
+        </div>
         <p class="result-name" id="result-name"></p>
         <p class="result-tagline" id="result-tagline"></p>
         <p class="result-desc" id="result-desc"></p>
@@ -194,6 +198,8 @@
   </footer>
 
   <script src="assets/js/data.js"></script>
+  <script src="assets/js/lib/three.min.js"></script>
+  <script src="assets/js/personality-3d.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>
