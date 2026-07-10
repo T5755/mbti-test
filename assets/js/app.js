@@ -4,7 +4,9 @@
 (function () {
   'use strict';
 
-  const TOTAL = QUESTIONS.length; // 28
+  let activeQuestions = QUESTIONS;   // 当前使用的题集（随档位变化）
+  let TOTAL = activeQuestions.length;
+  let currentTier = 'standard';      // 选中的测试档位
   const DIMS = ['EI', 'SN', 'TF', 'JP'];
   const FIRST_POLE = { EI: 'E', SN: 'S', TF: 'T', JP: 'J' };
 
@@ -164,7 +166,7 @@
   const elProgress = document.getElementById('progress-bar');
 
   function renderQuestion() {
-    const q = QUESTIONS[state.index];
+    const q = activeQuestions[state.index];
     elCounter.textContent = `第 ${state.index + 1} / ${TOTAL} 题`;
     elDim.textContent = DIM_LABELS[q.dim][q.pole];
     elQuestion.textContent = q.text;
@@ -223,7 +225,7 @@
   /* ---------- 计分 ---------- */
   function computeResult() {
     const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
-    QUESTIONS.forEach((q, i) => {
+    activeQuestions.forEach((q, i) => {
       const r = state.answers[i] || 3;
       scores[q.pole] += r;
       const opp = opposite(q.dim, q.pole);
@@ -557,66 +559,9 @@
       const cv = document.getElementById('compare-3d');
       requestAnimationFrame(() => window.initCompare3D(cv, typeDims(a), typeDims(b), cA, cB));
     }
-    drawCompareRadar(document.getElementById('compare-radar'), a, b, cA, cB);
   }
 
-  /* ---------- 双人格契合雷达（2D canvas，零依赖） ---------- */
-  function drawCompareRadar(canvas, codeA, codeB, colorA, colorB) {
-    if (!canvas || !canvas.getContext) return;
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const size = 300;
-    canvas.width = size * dpr; canvas.height = size * dpr;
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const cx = size / 2, cy = size / 2, R = size * 0.36;
-    ctx.clearRect(0, 0, size, size);
-    const labels = ['E/I', 'S/N', 'T/F', 'J/P'];
-    const keys = ['EI', 'SN', 'TF', 'JP'];
-
-    // 网格圈
-    ctx.lineWidth = 1;
-    for (let ring = 1; ring <= 4; ring++) {
-      const rr = R * ring / 4;
-      ctx.beginPath();
-      for (let i = 0; i <= 4; i++) {
-        const ang = -Math.PI / 2 + i * Math.PI / 2;
-        const x = cx + rr * Math.cos(ang), y = cy + rr * Math.sin(ang);
-        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-      }
-      ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.stroke();
-    }
-    // 轴线 + 标签
-    ctx.font = '600 12px system-ui, sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    for (let i = 0; i < 4; i++) {
-      const ang = -Math.PI / 2 + i * Math.PI / 2;
-      const x = cx + R * Math.cos(ang), y = cy + R * Math.sin(ang);
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y);
-      ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.stroke();
-      ctx.fillStyle = 'rgba(255,255,255,0.6)';
-      ctx.fillText(labels[i], cx + (R + 16) * Math.cos(ang), cy + (R + 16) * Math.sin(ang));
-    }
-    function plot(code, color) {
-      const p = TYPE_PROFILE[code] || [50, 50, 50, 50];
-      ctx.beginPath();
-      for (let i = 0; i < 4; i++) {
-        const ang = -Math.PI / 2 + i * Math.PI / 2;
-        const v = p[i] / 100; const rr = R * v;
-        const x = cx + rr * Math.cos(ang), y = cy + rr * Math.sin(ang);
-        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-      }
-      ctx.closePath();
-      ctx.fillStyle = hexA(color, 0.18); ctx.fill();
-      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
-      for (let i = 0; i < 4; i++) {
-        const ang = -Math.PI / 2 + i * Math.PI / 2;
-        const v = p[i] / 100; const rr = R * v;
-        const x = cx + rr * Math.cos(ang), y = cy + rr * Math.sin(ang);
-        ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
-      }
-    }
-    plot(codeA, colorA); plot(codeB, colorB);
-  }
+  /* 双人格契合雷达已移除，匹配度以 3D 星象 + 分数呈现 */
 
   /* ---------- 历史记录渲染 ---------- */
   function renderHistory() {
@@ -638,7 +583,7 @@
   }
   function setupResume() {
     const p = loadProgress();
-    if (p && p.index > 0 && p.answers.some((a) => a !== null)) {
+    if (p && p.index > 0 && Array.isArray(p.answers) && p.answers.length === TOTAL && p.answers.some((a) => a !== null)) {
       const btn = document.getElementById('start-btn');
       btn.textContent = `继续测试（第 ${p.index + 1} 题）`;
       btn.dataset.resume = '1';
@@ -650,16 +595,33 @@
     const btn = document.getElementById('start-btn');
     if (btn.dataset.resume === '1') {
       const p = loadProgress();
-      if (p) { state.index = p.index; state.answers = p.answers; }
+      if (p && Array.isArray(p.answers) && p.answers.length === TOTAL) {
+        state.index = p.index; state.answers = p.answers;
+      } else {
+        state.index = 0; state.answers = new Array(TOTAL).fill(null);
+      }
       btn.dataset.resume = '';
       btn.textContent = '开始测试';
     } else {
+      activeQuestions = getTierQuestions(currentTier);
+      TOTAL = activeQuestions.length;
       state.index = 0;
       state.answers = new Array(TOTAL).fill(null);
+      elProgress.setAttribute('aria-valuemax', String(TOTAL));
     }
     clearProgress();
     showScreen('screen-test');
     renderQuestion();
+  });
+
+  // 档位选择：切换测题档位
+  const tierEls = document.querySelectorAll('.tier-opt');
+  tierEls.forEach((el) => {
+    el.addEventListener('click', () => {
+      tierEls.forEach((t) => t.classList.remove('is-active'));
+      el.classList.add('is-active');
+      currentTier = el.dataset.tier;
+    });
   });
 
   scaleOpts.forEach((opt) => {
