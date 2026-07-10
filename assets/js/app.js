@@ -523,10 +523,14 @@
       });
       grid.appendChild(b);
     });
+    document.getElementById('pair-viz').hidden = true;
     document.getElementById('pair-result').hidden = true;
     document.getElementById('pair-modal').hidden = false;
   }
-  function closePair() { document.getElementById('pair-modal').hidden = true; }
+  function closePair() {
+    if (window.disposeCompare3D) window.disposeCompare3D();
+    document.getElementById('pair-modal').hidden = true;
+  }
   function showPairResult(a, b) {
     const r = compat(a, b);
     document.getElementById('pair-score-num').textContent = r.score;
@@ -540,6 +544,78 @@
     const diffTxt = r.diff.length ? `在 ${r.diff.join(' ')} 上互补，多些理解会更顺。` : `几乎同频，天然合拍。`;
     document.getElementById('pair-detail').textContent = sharedTxt + diffTxt;
     document.getElementById('pair-result').hidden = false;
+
+    // 双人格可视化：星象 + 雷达
+    const viz = document.getElementById('pair-viz');
+    viz.hidden = false;
+    const cA = TYPE_ACCENT[a] || '#6366f1';
+    const cB = TYPE_ACCENT[b] || '#8b5cf6';
+    const la = document.getElementById('legend-a'), lb = document.getElementById('legend-b');
+    la.textContent = a; lb.textContent = b;
+    la.style.color = cA; lb.style.color = cB;
+    if (window.initCompare3D) {
+      const cv = document.getElementById('compare-3d');
+      requestAnimationFrame(() => window.initCompare3D(cv, typeDims(a), typeDims(b), cA, cB));
+    }
+    drawCompareRadar(document.getElementById('compare-radar'), a, b, cA, cB);
+  }
+
+  /* ---------- 双人格契合雷达（2D canvas，零依赖） ---------- */
+  function drawCompareRadar(canvas, codeA, codeB, colorA, colorB) {
+    if (!canvas || !canvas.getContext) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const size = 300;
+    canvas.width = size * dpr; canvas.height = size * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const cx = size / 2, cy = size / 2, R = size * 0.36;
+    ctx.clearRect(0, 0, size, size);
+    const labels = ['E/I', 'S/N', 'T/F', 'J/P'];
+    const keys = ['EI', 'SN', 'TF', 'JP'];
+
+    // 网格圈
+    ctx.lineWidth = 1;
+    for (let ring = 1; ring <= 4; ring++) {
+      const rr = R * ring / 4;
+      ctx.beginPath();
+      for (let i = 0; i <= 4; i++) {
+        const ang = -Math.PI / 2 + i * Math.PI / 2;
+        const x = cx + rr * Math.cos(ang), y = cy + rr * Math.sin(ang);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.stroke();
+    }
+    // 轴线 + 标签
+    ctx.font = '600 12px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let i = 0; i < 4; i++) {
+      const ang = -Math.PI / 2 + i * Math.PI / 2;
+      const x = cx + R * Math.cos(ang), y = cy + R * Math.sin(ang);
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y);
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fillText(labels[i], cx + (R + 16) * Math.cos(ang), cy + (R + 16) * Math.sin(ang));
+    }
+    function plot(code, color) {
+      const p = TYPE_PROFILE[code] || [50, 50, 50, 50];
+      ctx.beginPath();
+      for (let i = 0; i < 4; i++) {
+        const ang = -Math.PI / 2 + i * Math.PI / 2;
+        const v = p[i] / 100; const rr = R * v;
+        const x = cx + rr * Math.cos(ang), y = cy + rr * Math.sin(ang);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = hexA(color, 0.18); ctx.fill();
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+      for (let i = 0; i < 4; i++) {
+        const ang = -Math.PI / 2 + i * Math.PI / 2;
+        const v = p[i] / 100; const rr = R * v;
+        const x = cx + rr * Math.cos(ang), y = cy + rr * Math.sin(ang);
+        ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+      }
+    }
+    plot(codeA, colorA); plot(codeB, colorB);
   }
 
   /* ---------- 历史记录渲染 ---------- */
@@ -629,10 +705,41 @@
     document.getElementById('share-modal').hidden = true;
   }));
 
+  /* ---------- PWA：Service Worker 注册 + 安装提示 ---------- */
+  function registerSW() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  }
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const btn = document.getElementById('install-btn');
+    if (btn) btn.hidden = false;
+  });
+  const installBtn = document.getElementById('install-btn');
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      try { await deferredPrompt.userChoice; } catch (_) {}
+      deferredPrompt = null;
+      installBtn.hidden = true;
+    });
+  }
+  window.addEventListener('appinstalled', () => {
+    const btn = document.getElementById('install-btn');
+    if (btn) btn.hidden = true;
+  });
+
   /* ---------- 初始化 ---------- */
   initTheme();
   initMagnetic();
   renderHistory();
   setupResume();
+  registerSW();
   showScreen('screen-intro');
 })();
