@@ -551,8 +551,8 @@ body {
 
 /* 双人格对比可视化 */
 .pair-viz {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-  margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--opt-border);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--opt-border);
   animation: screenIn 0.4s var(--ease);
 }
 .pair-3d-wrap, .pair-radar-wrap {
@@ -613,6 +613,7 @@ body {
   .pair-opt { font-size: 0.74rem; padding: 9px 2px; }
   .pair-viz { grid-template-columns: 1fr; }
   #compare-3d { height: 200px; }
+  #compare-radar { max-width: 320px; }
   .history-list { gap: 6px; }
 }
 
