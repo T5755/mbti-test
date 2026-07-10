@@ -3,7 +3,8 @@
 //   pole 对应极得分 += r；相反极得分 += (6 - r)
 // 每个维度两极高和为定值 42，最终占比 = 胜出极 / 42。
 
-const QUESTIONS = [
+// 全量题库：每维度 13 题（共 52），按维度连续排列，便于分档均衡取样
+const ALL_QUESTIONS = [
   // EI 外向 / 内向
   { id: 1,  dim: 'EI', pole: 'E', text: '在聚会或社交场合中，我通常精力充沛，也乐于成为焦点。' },
   { id: 2,  dim: 'EI', pole: 'I', text: '独处或安静思考时，我感到最放松，也最能恢复精力。' },
@@ -12,6 +13,12 @@ const QUESTIONS = [
   { id: 5,  dim: 'EI', pole: 'E', text: '进入新环境或面对陌生人时，我很快就能自来熟。' },
   { id: 6,  dim: 'EI', pole: 'I', text: '密集社交一整天后，我需要独处来给自己充电。' },
   { id: 7,  dim: 'EI', pole: 'E', text: '我习惯通过说话来整理思路，也喜欢团队头脑风暴。' },
+  { id: 29, dim: 'EI', pole: 'E', text: '在群体讨论中我更容易激发灵感，独处太久反而有点无聊。' },
+  { id: 30, dim: 'EI', pole: 'I', text: '对我而言，深度的一两知己，远胜过热闹的百人聚会。' },
+  { id: 31, dim: 'EI', pole: 'E', text: '遇到开心的事，我第一反应是想分享给很多人。' },
+  { id: 32, dim: 'EI', pole: 'I', text: '我常在心里反复斟酌，确定无误才开口表达。' },
+  { id: 33, dim: 'EI', pole: 'E', text: '稍显热闹的环境，反而让我思路更活跃。' },
+  { id: 34, dim: 'EI', pole: 'I', text: '高强度的社交对我是一种消耗，需要独处来恢复电量。' },
 
   // SN 实感 / 直觉
   { id: 8,  dim: 'SN', pole: 'S', text: '我更信任具体的事实、细节和亲身经验。' },
@@ -21,6 +28,12 @@ const QUESTIONS = [
   { id: 12, dim: 'SN', pole: 'S', text: '我更擅长处理眼前具体、现实的问题。' },
   { id: 13, dim: 'SN', pole: 'N', text: '我喜欢想象“如果……会怎样”，乐于探索各种可能。' },
   { id: 14, dim: 'SN', pole: 'S', text: '我偏好清晰明确的说明，而不是模糊的概括。' },
+  { id: 35, dim: 'SN', pole: 'S', text: '我更相信“眼见为实”的具体证据，而非凭空推测。' },
+  { id: 36, dim: 'SN', pole: 'N', text: '我常能从一件小事，联想到更宏观的图景。' },
+  { id: 37, dim: 'SN', pole: 'S', text: '步骤清晰、可落地的任务，让我最有安全感。' },
+  { id: 38, dim: 'SN', pole: 'N', text: '我乐于探讨抽象概念与长远的可能性。' },
+  { id: 39, dim: 'SN', pole: 'S', text: '我偏好稳妥可行的方案，而不是天马行空。' },
+  { id: 40, dim: 'SN', pole: 'N', text: '隐喻和象征，往往比直白描述更能打动我。' },
 
   // TF 思考 / 情感
   { id: 15, dim: 'TF', pole: 'T', text: '做决定时，我更看重逻辑与客观事实。' },
@@ -30,6 +43,12 @@ const QUESTIONS = [
   { id: 19, dim: 'TF', pole: 'T', text: '我认为公平比“让人舒服”更重要。' },
   { id: 20, dim: 'TF', pole: 'F', text: '维护人际关系的融洽，对我来说很重要。' },
   { id: 21, dim: 'TF', pole: 'T', text: '我习惯用分析的方式来化解冲突。' },
+  { id: 41, dim: 'TF', pole: 'T', text: '即便众人都认同，违背逻辑的结论我也难以接受。' },
+  { id: 42, dim: 'TF', pole: 'F', text: '做决定时，我会优先考虑会不会伤到相关的人。' },
+  { id: 43, dim: 'TF', pole: 'T', text: '我习惯把情绪和判断分开，就事论事。' },
+  { id: 44, dim: 'TF', pole: 'F', text: '团队氛围是否和谐，对我的工作状态影响很大。' },
+  { id: 45, dim: 'TF', pole: 'T', text: '若批评能指出具体逻辑漏洞，我会很欢迎。' },
+  { id: 46, dim: 'TF', pole: 'F', text: '我容易代入他人处境，真切共情他们的难处。' },
 
   // JP 判断 / 感知
   { id: 22, dim: 'JP', pole: 'J', text: '我喜欢提前计划，把事情安排得井井有条。' },
@@ -39,7 +58,32 @@ const QUESTIONS = [
   { id: 26, dim: 'JP', pole: 'J', text: '清单和日程表让我感到安心且高效。' },
   { id: 27, dim: 'JP', pole: 'P', text: '我享受自发与即兴带来的惊喜。' },
   { id: 28, dim: 'JP', pole: 'J', text: '我更喜欢有结论、有终点的工作方式。' },
+  { id: 47, dim: 'JP', pole: 'J', text: '拖延会让我焦虑，尽早推进才安心。' },
+  { id: 48, dim: 'JP', pole: 'P', text: '计划赶不上变化时，我更倾向随机应变。' },
+  { id: 49, dim: 'JP', pole: 'J', text: '我习惯把目标拆解成步骤，并跟踪进度。' },
+  { id: 50, dim: 'JP', pole: 'P', text: '保留弹性，才能抓住意外出现的机会。' },
+  { id: 51, dim: 'JP', pole: 'J', text: '决策之后我倾向尽快落地，而非反复权衡。' },
+  { id: 52, dim: 'JP', pole: 'P', text: '开放式、尚无定论的状态，反而让我自在。' },
 ];
+
+// 测试分档：每档按维度均衡取样，题量越多结果越稳
+const TIERS = [
+  { key: 'quick',    name: '极速版', perDim: 3,  time: '约 2 分钟',  note: '12 题 · 快速了解大致倾向' },
+  { key: 'standard', name: '标准版', perDim: 7,  time: '约 5 分钟',  note: '28 题 · 准确度良好（推荐）' },
+  { key: 'pro',      name: '专业版', perDim: 13, time: '约 10 分钟', note: '52 题 · 题量充分，结果更稳' },
+];
+const TIER_DIMS = ['EI', 'SN', 'TF', 'JP'];
+function getTierQuestions(key) {
+  const tier = TIERS.find((t) => t.key === key) || TIERS[1];
+  const out = [];
+  TIER_DIMS.forEach((dim) => {
+    ALL_QUESTIONS.filter((q) => q.dim === dim).slice(0, tier.perDim).forEach((q) => out.push(q));
+  });
+  return out;
+}
+
+// 默认题集（标准版），保持向后兼容
+const QUESTIONS = getTierQuestions('standard');
 
 // 16 型人格数据
 // celebrities / love 为坊间常见说法，仅作趣味参考
