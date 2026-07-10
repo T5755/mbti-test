@@ -18,10 +18,6 @@
 
   function n(v) { const l = Math.hypot(v[0], v[1], v[2]); return [v[0] / l, v[1] / l, v[2] / l]; }
   function mul(v, s) { return [v[0] * s, v[1] * s, v[2] * s]; }
-  function hexToRgb(hex) {
-    const m = hex.replace('#', '');
-    return [parseInt(m.slice(0, 2), 16), parseInt(m.slice(2, 4), 16), parseInt(m.slice(4, 6), 16)];
-  }
 
   function buildStar(dims, lineColor, pointColor) {
     const group = new THREE.Group();
@@ -41,13 +37,13 @@
     // 端点发光球 + 光晕
     pts.forEach((p) => {
       const s = new THREE.Mesh(
-        new THREE.SphereGeometry(0.1, 14, 14),
+        new THREE.SphereGeometry(0.13, 14, 14),
         new THREE.MeshBasicMaterial({ color: pointColor })
       );
       s.position.set(p[0], p[1], p[2]); group.add(s);
       const halo = new THREE.Mesh(
         new THREE.SphereGeometry(0.18, 14, 14),
-        new THREE.MeshBasicMaterial({ color: pointColor, transparent: true, opacity: 0.14 })
+        new THREE.MeshBasicMaterial({ color: pointColor, transparent: true, opacity: 0.24 })
       );
       halo.position.set(p[0], p[1], p[2]); group.add(halo);
     });
@@ -63,7 +59,7 @@
     const lg = new THREE.BufferGeometry();
     lg.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
     group.add(new THREE.LineSegments(
-      lg, new THREE.LineBasicMaterial({ color: lineColor, transparent: true, opacity: 0.55 })
+      lg, new THREE.LineBasicMaterial({ color: lineColor, transparent: true, opacity: 0.8 })
     ));
 
     // 中心小核
@@ -97,8 +93,8 @@
 
     parent = new THREE.Group();
     scene.add(parent);
-    parent.add(buildStar(dimsA, hexToRgb(colorA), hexToRgb(colorA)));
-    parent.add(buildStar(dimsB, hexToRgb(colorB), hexToRgb(colorB)));
+    parent.add(buildStar(dimsA, colorA, colorA));
+    parent.add(buildStar(dimsB, colorB, colorB));
     parent.rotation.x = 0.45;
 
     canvas.style.touchAction = 'none';
