@@ -549,6 +549,31 @@ body {
 .pair-verdict { font-weight: 700; font-size: 1.05rem; margin: 10px 0 6px; }
 .pair-detail { color: var(--text-soft); font-size: 0.9rem; line-height: 1.65; margin: 0; }
 
+/* 双人格对比可视化 */
+.pair-viz {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--opt-border);
+  animation: screenIn 0.4s var(--ease);
+}
+.pair-3d-wrap, .pair-radar-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.pair-3d-wrap { position: relative; }
+#compare-3d { width: 100%; height: 220px; display: block; }
+.pair-3d-hint, .pair-radar-hint { font-size: 0.72rem; color: var(--text-faint); margin: 0; }
+#compare-radar { width: 100%; max-width: 240px; height: auto; display: block; }
+.pair-legend { display: flex; gap: 14px; font-size: 0.82rem; font-weight: 700; }
+.pair-legend .pl { letter-spacing: 0.5px; }
+
+/* 安装到主屏幕按钮 */
+.btn-install {
+  margin-top: 14px; width: 100%;
+  border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent);
+  border-radius: 14px; padding: 11px 16px; font-family: inherit; font-weight: 700; font-size: 0.92rem;
+  cursor: pointer; transition: transform 0.2s var(--ease), background 0.2s;
+}
+.btn-install:hover { transform: translateY(-2px); background: var(--accent); color: #fff; }
+
 /* 分享图 */
 .share-card { text-align: center; }
 .share-img-wrap {
@@ -586,6 +611,8 @@ body {
   .share-card { max-width: 96vw; }
   .pair-grid { gap: 6px; }
   .pair-opt { font-size: 0.74rem; padding: 9px 2px; }
+  .pair-viz { grid-template-columns: 1fr; }
+  #compare-3d { height: 200px; }
   .history-list { gap: 6px; }
 }
 
