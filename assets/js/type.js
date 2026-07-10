@@ -74,4 +74,11 @@
   document.documentElement.style.setProperty('--accent', c);
   document.documentElement.style.setProperty('--accent-2', shade(c, 30));
   sync();
+
+  // PWA：注册 Service Worker（离线可看档案）
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
 })();
