@@ -18,6 +18,8 @@
   <meta name="twitter:title" content="MBTI 人格测试 · 28 题看清你是谁" />
   <meta name="twitter:description" content="28 道精选题目，3 分钟测出你的十六型人格，免费可分享。" />
   <meta name="twitter:image" content="assets/img/cover.svg" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/img/icon-192.png" />
   <!-- 纯系统字体：零外部依赖，国内网络秒开，不依赖任何 CDN -->
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
@@ -67,6 +69,7 @@
           <button id="clear-history-btn" class="btn-link" type="button">清除记录</button>
         </div>
         <p class="intro-note">本测试用于自我探索与趣味参考，不构成心理诊断。</p>
+        <button id="install-btn" class="btn-install" type="button" hidden>安装到主屏幕 · 随时测</button>
       </div>
     </section>
 
@@ -172,6 +175,20 @@
         <h3 id="pair-title" class="modal-title">测 TA 的匹配度</h3>
         <p class="modal-sub">你是 <strong id="pair-me">—</strong>，选出 TA 的类型看看契合度：</p>
         <div class="pair-grid" id="pair-grid"></div>
+        <div class="pair-viz" id="pair-viz" hidden>
+          <div class="pair-3d-wrap" aria-hidden="true">
+            <canvas id="compare-3d"></canvas>
+            <p class="pair-3d-hint">双人格星象 · 拖拽旋转</p>
+          </div>
+          <div class="pair-radar-wrap">
+            <canvas id="compare-radar" width="300" height="300"></canvas>
+            <p class="pair-radar-hint">四维契合雷达</p>
+            <div class="pair-legend">
+              <span class="pl pl-a" id="legend-a">—</span>
+              <span class="pl pl-b" id="legend-b">—</span>
+            </div>
+          </div>
+        </div>
         <div class="pair-result" id="pair-result" hidden>
           <div class="pair-score"><span id="pair-score-num">0</span><small>%</small></div>
           <p class="pair-verdict" id="pair-verdict"></p>
@@ -200,6 +217,7 @@
   <script src="assets/js/data.js"></script>
   <script src="assets/js/lib/three.min.js"></script>
   <script src="assets/js/personality-3d.js"></script>
+  <script src="assets/js/personality-compare.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>
