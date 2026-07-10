@@ -190,3 +190,30 @@ const TYPE_ORDER = [
   'INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP',
   'ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP',
 ];
+
+// 每种类型的典型四维强度：每个数组为 [E%, S%, T%, J%]（首极占比，0~100）
+// 用于双人格对比的星象与雷达图，让每个类型形状各异。
+const TYPE_PROFILE = {
+  INTJ: [30, 28, 62, 68], INTP: [32, 26, 60, 38],
+  ENTJ: [72, 30, 64, 70], ENTP: [70, 28, 58, 40],
+  INFJ: [34, 30, 42, 66], INFP: [36, 28, 40, 40],
+  ENFJ: [70, 32, 42, 68], ENFP: [68, 30, 44, 42],
+  ISTJ: [28, 68, 58, 72], ISFJ: [30, 70, 42, 70],
+  ESTJ: [70, 66, 60, 74], ESFJ: [68, 68, 44, 72],
+  ISTP: [30, 66, 62, 40], ISFP: [34, 64, 42, 42],
+  ESTP: [70, 64, 60, 42], ESFP: [68, 66, 46, 44],
+};
+
+// 由类型代码推导四维占比（与 computeResult 同形），供可视化复用
+const PROFILE_DIMS = ['EI', 'SN', 'TF', 'JP'];
+const PROFILE_FIRST = { EI: 'E', SN: 'S', TF: 'T', JP: 'J' };
+function typeDims(code) {
+  const p = TYPE_PROFILE[code] || [50, 50, 50, 50];
+  return PROFILE_DIMS.map((dim, i) => {
+    const first = PROFILE_FIRST[dim];
+    const second = first === 'E' ? 'I' : first === 'S' ? 'N' : first === 'T' ? 'F' : 'P';
+    const win = code[i] === first ? first : second;
+    const pct = code[i] === first ? p[i] : 100 - p[i];
+    return { dim, win, pct, fromLeft: win === first };
+  });
+}
